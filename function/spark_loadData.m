@@ -7,21 +7,25 @@ function tseries = spark_loadData(files_in, mask_in)
 %   - tseries: time-series as n_times x n_voxel matrix for the voxel inside
 % the mask. 
 
-    if nargin < 2
-        mask_in = '';
-    end
 
-    fprintf(['Reading fMRI data... \n']);
-    [hdr,vol] = niak_read_vol(files_in); % read fMRI data
+    fprintf('Reading fMRI data... \n');
+    [~,~,ext] = fileparts(files_in);
+    if any(strcmp(ext,{'.nii','.nii.gz','.mnc'}))
+        [hdr,vol] = niak_read_vol(files_in); % read fMRI data
 
-    % Load Brain mask
-    fprintf(['Reading brain mask... \n']);
-    
-    if ~isempty(mask_in)
+        % Load Brain mask
+        fprintf('Reading brain mask... \n');
         [hdr_mask,mask] = niak_read_vol(mask_in); % read brain mask
+
+        % Convert to tseries
         tseries = niak_vol2tseries(vol,mask>0);
+
+    elseif any(strcmp(ext,{'.gii'}))
+        tseries = gifti(files_in);
+        tseries = tseries.cdata;
     else
-        tseries = niak_vol2tseries(vol);
+        disp('Unrecorgnized file format -- TODO better error');
     end
+
 end
 

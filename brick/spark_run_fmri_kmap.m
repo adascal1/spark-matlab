@@ -37,40 +37,14 @@ for ind=1: size(thrfinalX,2)
     opt_k(ind)=nnz(thrfinalX(:,ind));
 end
 
+isVolume = ~isempty(files_in.mask);
+
 %% k-map generation
-[hdr,vol_mask] = niak_read_vol(files_in.mask);
-vol_mask = round(vol_mask);
-
-k_map = niak_tseries2vol(opt_k,vol_mask);
-
-[path_f,name_f,ext_f] = niak_fileparts(files_out.kmaps); clear path_f name_f
-hdr.type = ext_f
-hdr.file_name = files_out.kmaps;
-niak_write_vol(hdr,k_map);
-
-
-% Save output files
-if ~strcmp(files_out.kmap_all_mat,'gb_niak_omitted')
-    hdr.file_name = '';
-    save(files_out.kmap_all_mat, 'k_map','hdr','opt_k');
-end
+[k_map,hdr,opt_k, vol_mask] = spark_saveKmap(opt_k, files_in.mask, files_out, isVolume );
 
 
 %% final atom maps 
-for i=1:size(thrfinalX,1)
-    atom=thrfinalX(i,:);
-    atom_map{i} = niak_tseries2vol(atom,vol_mask);
-    hdr.file_name = [opt.folder_out,'atom' num2str(i) '_',opt.label.name ext_f];
-    niak_write_vol(hdr,atom_map{i});
-end
-
-
-% Save output files
-if ~strcmp(files_out.atoms_all_mat,'gb_niak_omitted')
-    hdr.file_name = '';
-    save(files_out.atoms_all_mat, 'atom_map','hdr','opt_k');
-end
-
+atom_map = spark_saveAtoms(thrfinalX, files_in.mask, files_out, opt, isVolume );
 
 
 %% Save all
