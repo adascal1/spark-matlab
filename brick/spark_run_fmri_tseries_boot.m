@@ -10,13 +10,7 @@ if opt.flag_test == 1
 end
 
 %% Load ROI Time Series
-fprintf(['Reading fMRI data... \n']);
-[hdr,vol] = niak_read_vol(files_in); % read fMRI data
-
-%% Load Brain mask
-fprintf(['Reading brain mask... \n']);
-[hdr_mask,mask] = niak_read_vol(opt.mask); % read brain mask
-tseries = niak_vol2tseries(vol,mask>0);
+tseries = spark_loadData(files_in, opt.mask);
 tseries = niak_normalize_tseries(tseries,'mean_var');
 
 %% Bootstrap
